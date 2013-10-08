@@ -4,15 +4,16 @@ import org.apache.commons.lang.StringUtils;
 
 import java.io.*;
 import java.net.Socket;
-import java.util.Scanner;
 
 public class TelnetTask implements Runnable {
 
     private final Socket socket;
+    private final TelnetCommands telnetCommands;
     private File currentDirectory = new File(".");
 
     public TelnetTask(Socket socket) {
         this.socket = socket;
+        telnetCommands = new TelnetCommands();
     }
 
     @Override
@@ -27,23 +28,7 @@ public class TelnetTask implements Runnable {
     }
 
     private TelnetCommand command() throws IOException {
-        return commandFor(receive());
-    }
-
-    private TelnetCommand commandFor(final String command) {
-        Scanner scanner = new Scanner(command);
-        final String first = scanner.next();
-        if ("pwd".equals(first)) {
-            return new PwdCommand();
-        } else if ("cd".equals(first)) {
-            return new CdCommand(command);
-        } else if ("exit".equals(first)) {
-            return new ExitCommand();
-        } else if ("ls".equals(first)) {
-            return new LsCommand();
-        } else {
-            return new UnknownCommand();
-        }
+        return telnetCommands.commandFor(receive());
     }
 
     private String receive() throws IOException {

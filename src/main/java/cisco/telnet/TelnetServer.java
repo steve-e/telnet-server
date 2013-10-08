@@ -38,5 +38,4 @@ public class TelnetServer {
             throw new IllegalStateException(e);
         }
     }
-
 }
