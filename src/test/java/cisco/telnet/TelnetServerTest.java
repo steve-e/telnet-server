@@ -7,6 +7,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.*;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
@@ -29,7 +30,7 @@ public class TelnetServerTest {
     public void setUp() throws Exception {
         root = temporaryFolder.getRoot();
         executorService = Executors.newFixedThreadPool(1);
-        int port = new Random().nextInt(1000) + 5000;
+        int port = someUnusedPort();
         telnetServer = new TelnetServer(port);
         executorService.submit(new Runnable() {
             @Override
@@ -38,7 +39,23 @@ public class TelnetServerTest {
             }
         });
 
-        socket = new Socket("localhost", port);
+        socket = new Socket();
+        socket.connect(new InetSocketAddress(port), 1000);
+    }
+
+    private int someUnusedPort() {
+        int port = someRandomNotWellKnownPort();
+        while (true) {
+            try {
+                new Socket("localhost", port);
+            } catch (IOException e) {
+                return port;
+            }
+        }
+    }
+
+    private int someRandomNotWellKnownPort() {
+        return new Random().nextInt(1000) + 5000;
     }
 
     @After
@@ -59,6 +76,15 @@ public class TelnetServerTest {
     @Test
     public void canPwd() throws Exception {
         String expectedPath = new File(".").getAbsolutePath();
+        whenTheClientSends("pwd");
+        assertThat(theServerResponse(), is(expectedPath));
+    }
+
+    @Test
+    public void canPwdTwice() throws Exception {
+        String expectedPath = new File(".").getAbsolutePath();
+        whenTheClientSends("pwd");
+        assertThat(theServerResponse(), is(expectedPath));
         whenTheClientSends("pwd");
         assertThat(theServerResponse(), is(expectedPath));
     }

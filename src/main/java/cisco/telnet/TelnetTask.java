@@ -1,6 +1,9 @@
 package cisco.telnet;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Scanner;
 
@@ -15,7 +18,9 @@ public class TelnetTask implements Runnable {
     @Override
     public void run() {
         try {
-            reply(commandFor(receive()));
+            while (!Thread.currentThread().isInterrupted()) {
+                reply(commandFor(receive()));
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -28,7 +33,7 @@ public class TelnetTask implements Runnable {
             return new PwdCommand();
         } else if ("cd".equals(first)) {
             return new CdCommand(command);
-        } else if("exit".equals(first)) {
+        } else if ("exit".equals(first)) {
             return new ExitCommand(socket);
         }
         throw new IllegalStateException("no command!");
@@ -40,7 +45,7 @@ public class TelnetTask implements Runnable {
 
     private void reply(TelnetCommand cmd) throws IOException {
         new PrintWriter(socket.getOutputStream(), true).println(cmd.execute());
-        if(cmd instanceof ExitCommand) {
+        if (cmd instanceof ExitCommand) {
             socket.close();
         }
     }
