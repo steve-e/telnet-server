@@ -18,6 +18,9 @@ public class CdCommand implements TelnetCommand {
         if (!newDirectory.isAbsolute()) {
             newDirectory = new File(currentDirectory, path);
         }
+        if (!newDirectory.exists() || !newDirectory.isDirectory()) {
+            newDirectory = currentDirectory;
+        }
         return new CommandResult(newDirectory.getAbsolutePath(), newDirectory);
     }
 }

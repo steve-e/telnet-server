@@ -69,14 +69,14 @@ public class TelnetServerTest {
 
     @Test
     public void canPwd() throws Exception {
-        String expectedPath = new File(".").getAbsolutePath();
+        String expectedPath = new File(".").getCanonicalPath();
         whenTheClientSends("pwd");
         assertThat(theServerResponse(), is(expectedPath));
     }
 
     @Test
     public void canPwdTwice() throws Exception {
-        String expectedPath = new File(".").getAbsolutePath();
+        String expectedPath = new File(".").getCanonicalPath();
         whenTheClientSends("pwd");
         assertThat(theServerResponse(), is(expectedPath));
         whenTheClientSends("pwd");
@@ -89,6 +89,15 @@ public class TelnetServerTest {
         whenTheClientSends("cd " + expectedPath);
         assertThat(theServerResponse(), is(expectedPath));
         whenTheClientSends("pwd");
+        assertThat(theServerResponse(), is(expectedPath));
+    }
+
+    @Test
+    public void cannotChangeToNonExistentDirectory() throws Exception {
+        String expectedPath = root.getAbsolutePath();
+        whenTheClientSends("cd " + expectedPath);
+        assertThat(theServerResponse(), is(expectedPath));
+        whenTheClientSends("cd foo");
         assertThat(theServerResponse(), is(expectedPath));
     }
 

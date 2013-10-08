@@ -14,12 +14,17 @@ public class TelnetTask implements Runnable {
     private final Socket socket;
     private final TelnetCommands telnetCommands;
     private final SocketCommunications socketCommunications;
-    private File currentDirectory = new File(".");
+    private File currentDirectory;
 
     public TelnetTask(Socket socket) {
         this.socket = socket;
         telnetCommands = new TelnetCommands();
         socketCommunications = new SocketCommunications(socket);
+        try {
+            currentDirectory = new File(".").getCanonicalFile();
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     @Override

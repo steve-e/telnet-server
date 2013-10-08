@@ -2,6 +2,9 @@ package cisco.telnet;
 
 public class TelnetRunner {
     public static void main(String[] args) {
-        new TelnetServer(6666).start();
+        int port = 6666;
+        if(args.length == 1)
+            port = Integer.valueOf(args[0]);
+        new TelnetServer(port).start();
     }
 }
