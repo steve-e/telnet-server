@@ -11,7 +11,11 @@ public class CdCommand implements TelnetCommand {
 
     @Override
     public CommandResult executeFrom(File currentDirectory) {
-        File newDirectory = new File(command.substring("cd".length()).trim());
+        String path = command.substring("cd".length()).trim();
+        File newDirectory = new File(path);
+        if (!newDirectory.isAbsolute()) {
+            newDirectory = new File(currentDirectory, path);
+        }
         return new CommandResult(newDirectory.getAbsolutePath(), newDirectory);
     }
 }

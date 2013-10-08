@@ -25,10 +25,12 @@ public class TelnetServerTest {
     private Socket socket;
     private ExecutorService executorService;
     private File root;
+    private File child;
+    private File grandChild;
 
     @Before
     public void setUp() throws Exception {
-        root = temporaryFolder.getRoot();
+        createDirectoryStructure();
         executorService = Executors.newFixedThreadPool(1);
         int port = someUnusedPort();
         telnetServer = new TelnetServer(port);
@@ -41,6 +43,13 @@ public class TelnetServerTest {
 
         socket = new Socket();
         socket.connect(new InetSocketAddress(port), 2000);
+    }
+
+    private void createDirectoryStructure() throws IOException {
+        root = temporaryFolder.getRoot();
+        child = temporaryFolder.newFolder();
+        grandChild = new File(child, "grandChild");
+        grandChild.mkdir();
     }
 
     @After
@@ -84,8 +93,19 @@ public class TelnetServerTest {
     }
 
     @Test
-    public void canListDirectory() throws Exception {
+    public void canChangeWithRelativeDirectory() throws Exception {
         String expectedPath = root.getAbsolutePath();
+        whenTheClientSends("cd " + expectedPath);
+        assertThat(theServerResponse(), is(expectedPath));
+        whenTheClientSends("cd "+child.getName());
+        assertThat(theServerResponse(), is(child.getAbsolutePath()));
+        whenTheClientSends("cd "+grandChild.getName());
+        assertThat(theServerResponse(), is(grandChild.getAbsolutePath()));
+    }
+
+    @Test
+    public void canListDirectory() throws Exception {
+        String expectedPath = grandChild.getAbsolutePath();
         whenTheClientSends("cd " + expectedPath);
         assertThat(theServerResponse(), is(expectedPath));
         whenTheClientSends("ls");
