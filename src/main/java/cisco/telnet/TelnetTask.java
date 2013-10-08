@@ -27,12 +27,9 @@ public class TelnetTask implements Runnable {
         if ("pwd".equals(first)) {
             return new PwdCommand();
         } else if ("cd".equals(first)) {
-            return new TelnetCommand() {
-                @Override
-                public String execute() {
-                    return new File(command.substring(first.length()).trim()).getAbsolutePath();
-                }
-            };
+            return new CdCommand(command);
+        } else if("exit".equals(first)) {
+            return new ExitCommand(socket);
         }
         throw new IllegalStateException("no command!");
     }
@@ -43,6 +40,8 @@ public class TelnetTask implements Runnable {
 
     private void reply(TelnetCommand cmd) throws IOException {
         new PrintWriter(socket.getOutputStream(), true).println(cmd.execute());
+        if(cmd instanceof ExitCommand) {
+            socket.close();
+        }
     }
-
 }

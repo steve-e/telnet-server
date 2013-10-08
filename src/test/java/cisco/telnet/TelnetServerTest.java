@@ -6,10 +6,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
@@ -53,7 +50,7 @@ public class TelnetServerTest {
 
     @Test
     public void canConnect() throws Exception {
-        new PrintWriter(socket.getOutputStream(), true).println("pwd");
+        whenTheClientSends("pwd");
         assertThat(socket.isConnected(), is(true));
         assertThat(socket.isBound(), is(true));
         assertThat(socket.isClosed(), is(false));
@@ -62,22 +59,30 @@ public class TelnetServerTest {
     @Test
     public void canPwd() throws Exception {
         String expectedPath = new File(".").getAbsolutePath();
-        new PrintWriter(socket.getOutputStream(), true).println("pwd");
-        assertThat(new BufferedReader(new InputStreamReader(socket.getInputStream())).readLine(), is(expectedPath));
+        whenTheClientSends("pwd");
+        assertThat(theServerResponse(), is(expectedPath));
     }
 
     @Test
     public void canCd() throws Exception {
         String expectedPath = root.getAbsolutePath();
-        new PrintWriter(socket.getOutputStream(), true).println("cd " + expectedPath);
-        assertThat(new BufferedReader(new InputStreamReader(socket.getInputStream())).readLine(), is(expectedPath));
+        whenTheClientSends("cd " + expectedPath);
+        assertThat(theServerResponse(), is(expectedPath));
     }
 
     @Test
     public void canDisconnect() throws Exception {
-        new PrintWriter(socket.getOutputStream(), true).println("pwd");
-        telnetServer.close();
-        assertThat(socket.isClosed(), is(true));
+        whenTheClientSends("exit");
+        assertThat(theServerResponse(), is("Exiting"));
+        //assertThat(socket.isClosed(), is(true));
+    }
+
+    private String theServerResponse() throws IOException {
+        return new BufferedReader(new InputStreamReader(socket.getInputStream())).readLine();
+    }
+
+    private void whenTheClientSends(String command) throws IOException {
+        new PrintWriter(socket.getOutputStream(), true).println(command);
     }
 
 }
