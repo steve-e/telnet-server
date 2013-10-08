@@ -35,8 +35,9 @@ public class TelnetTask implements Runnable {
             return new CdCommand(command);
         } else if ("exit".equals(first)) {
             return new ExitCommand();
+        } else {
+            return new UnknownCommand();
         }
-        throw new IllegalStateException("no command!");
     }
 
     private String receive() throws IOException {
@@ -53,6 +54,13 @@ public class TelnetTask implements Runnable {
         if (cmd instanceof ExitCommand) {
             Thread.currentThread().interrupt();
             socket.close();
+        }
+    }
+
+    private static class UnknownCommand implements TelnetCommand {
+        @Override
+        public CommandResult executeFrom(File currentDirectory) {
+            return new CommandResult(".",currentDirectory);
         }
     }
 }

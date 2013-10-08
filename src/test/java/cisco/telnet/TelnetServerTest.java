@@ -89,6 +89,12 @@ public class TelnetServerTest {
         assertThat(theServerResponse(), is("Exiting"));
     }
 
+    @Test
+    public void ignoresUnrecognisedCommand() throws Exception {
+        whenTheClientSends("foo");
+        assertThat(theServerResponse(), is("."));
+    }
+
     private String theServerResponse() throws IOException {
         return new BufferedReader(new InputStreamReader(socket.getInputStream())).readLine();
     }
