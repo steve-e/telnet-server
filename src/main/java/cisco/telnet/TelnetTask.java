@@ -19,11 +19,15 @@ public class TelnetTask implements Runnable {
     public void run() {
         try {
             while (!Thread.currentThread().isInterrupted()) {
-                replyTo(commandFor(receive()));
+                replyTo(command());
             }
         } catch (IOException e) {
             // Connection reset, exit
         }
+    }
+
+    private TelnetCommand command() throws IOException {
+        return commandFor(receive());
     }
 
     private TelnetCommand commandFor(final String command) {
@@ -35,13 +39,15 @@ public class TelnetTask implements Runnable {
             return new CdCommand(command);
         } else if ("exit".equals(first)) {
             return new ExitCommand();
+        } else if ("ls".equals(first)) {
+            return new LsCommand();
         } else {
             return new UnknownCommand();
         }
     }
 
     private String receive() throws IOException {
-        if(socket.isClosed() || !socket.isConnected()||socket.isInputShutdown()) {
+        if (socket.isClosed() || !socket.isConnected() || socket.isInputShutdown()) {
             return "exit";
         }
         return StringUtils.defaultString(new BufferedReader(new InputStreamReader(socket.getInputStream())).readLine(), "exit");
@@ -54,13 +60,6 @@ public class TelnetTask implements Runnable {
         if (cmd instanceof ExitCommand) {
             Thread.currentThread().interrupt();
             socket.close();
-        }
-    }
-
-    private static class UnknownCommand implements TelnetCommand {
-        @Override
-        public CommandResult executeFrom(File currentDirectory) {
-            return new CommandResult(".",currentDirectory);
         }
     }
 }

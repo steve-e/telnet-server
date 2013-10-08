@@ -84,6 +84,15 @@ public class TelnetServerTest {
     }
 
     @Test
+    public void canListDirectory() throws Exception {
+        String expectedPath = root.getAbsolutePath();
+        whenTheClientSends("cd " + expectedPath);
+        assertThat(theServerResponse(), is(expectedPath));
+        whenTheClientSends("ls");
+        assertThat(theServerResponse(), is(""));
+    }
+
+    @Test
     public void canDisconnect() throws Exception {
         whenTheClientSends("exit");
         assertThat(theServerResponse(), is("Exiting"));
@@ -92,7 +101,7 @@ public class TelnetServerTest {
     @Test
     public void ignoresUnrecognisedCommand() throws Exception {
         whenTheClientSends("foo");
-        assertThat(theServerResponse(), is("."));
+        assertThat(theServerResponse(), is("Unrecognised command"));
     }
 
     private String theServerResponse() throws IOException {
