@@ -1,4 +1,4 @@
-package cisco.telnet;
+package cisco.telnet.commands;
 
 import java.util.Scanner;
 
