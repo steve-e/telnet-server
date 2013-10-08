@@ -1,5 +1,7 @@
 package cisco.telnet;
 
+import java.io.File;
+
 public interface TelnetCommand {
-    public String execute();
+    public CommandResult executeFrom(File currentDirectory);
 }

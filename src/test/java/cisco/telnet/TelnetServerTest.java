@@ -40,22 +40,7 @@ public class TelnetServerTest {
         });
 
         socket = new Socket();
-        socket.connect(new InetSocketAddress(port), 1000);
-    }
-
-    private int someUnusedPort() {
-        int port = someRandomNotWellKnownPort();
-        while (true) {
-            try {
-                new Socket("localhost", port);
-            } catch (IOException e) {
-                return port;
-            }
-        }
-    }
-
-    private int someRandomNotWellKnownPort() {
-        return new Random().nextInt(1000) + 5000;
+        socket.connect(new InetSocketAddress(port), 2000);
     }
 
     @After
@@ -90,9 +75,11 @@ public class TelnetServerTest {
     }
 
     @Test
-    public void canCd() throws Exception {
+    public void canChangeDirectory() throws Exception {
         String expectedPath = root.getAbsolutePath();
         whenTheClientSends("cd " + expectedPath);
+        assertThat(theServerResponse(), is(expectedPath));
+        whenTheClientSends("pwd");
         assertThat(theServerResponse(), is(expectedPath));
     }
 
@@ -100,7 +87,6 @@ public class TelnetServerTest {
     public void canDisconnect() throws Exception {
         whenTheClientSends("exit");
         assertThat(theServerResponse(), is("Exiting"));
-        //assertThat(socket.isClosed(), is(true));
     }
 
     private String theServerResponse() throws IOException {
@@ -109,6 +95,21 @@ public class TelnetServerTest {
 
     private void whenTheClientSends(String command) throws IOException {
         new PrintWriter(socket.getOutputStream(), true).println(command);
+    }
+
+    private int someRandomNotWellKnownPort() {
+        return new Random().nextInt(1000) + 5000;
+    }
+
+    private int someUnusedPort() {
+        int port = someRandomNotWellKnownPort();
+        while (true) {
+            try {
+                new Socket("localhost", port);
+            } catch (IOException e) {
+                return port;
+            }
+        }
     }
 
 }

@@ -1,15 +1,15 @@
 package cisco.telnet;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import org.apache.commons.lang.StringUtils;
+
+import java.io.*;
 import java.net.Socket;
 import java.util.Scanner;
 
 public class TelnetTask implements Runnable {
 
     private final Socket socket;
+    private File currentDirectory = new File(".");
 
     public TelnetTask(Socket socket) {
         this.socket = socket;
@@ -19,10 +19,10 @@ public class TelnetTask implements Runnable {
     public void run() {
         try {
             while (!Thread.currentThread().isInterrupted()) {
-                reply(commandFor(receive()));
+                replyTo(commandFor(receive()));
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            // Connection reset, exit
         }
     }
 
@@ -34,18 +34,24 @@ public class TelnetTask implements Runnable {
         } else if ("cd".equals(first)) {
             return new CdCommand(command);
         } else if ("exit".equals(first)) {
-            return new ExitCommand(socket);
+            return new ExitCommand();
         }
         throw new IllegalStateException("no command!");
     }
 
     private String receive() throws IOException {
-        return new BufferedReader(new InputStreamReader(socket.getInputStream())).readLine();
+        if(socket.isClosed() || !socket.isConnected()||socket.isInputShutdown()) {
+            return "exit";
+        }
+        return StringUtils.defaultString(new BufferedReader(new InputStreamReader(socket.getInputStream())).readLine(), "exit");
     }
 
-    private void reply(TelnetCommand cmd) throws IOException {
-        new PrintWriter(socket.getOutputStream(), true).println(cmd.execute());
+    private void replyTo(TelnetCommand cmd) throws IOException {
+        CommandResult commandResult = cmd.executeFrom(currentDirectory);
+        currentDirectory = commandResult.currentDirectory();
+        new PrintWriter(socket.getOutputStream(), true).println(commandResult.output());
         if (cmd instanceof ExitCommand) {
+            Thread.currentThread().interrupt();
             socket.close();
         }
     }

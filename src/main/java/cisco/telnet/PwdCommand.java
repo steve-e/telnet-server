@@ -4,7 +4,7 @@ import java.io.File;
 
 public class PwdCommand implements TelnetCommand {
     @Override
-    public String execute() {
-        return new File(".").getAbsolutePath();
+    public CommandResult executeFrom(File currentDirectory) {
+        return new CommandResult(currentDirectory.getAbsolutePath(), currentDirectory);
     }
 }
