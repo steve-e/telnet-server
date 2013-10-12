@@ -9,9 +9,10 @@ import org.junit.rules.TemporaryFolder;
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.util.Random;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
@@ -27,17 +28,20 @@ public class TelnetServerTest {
     private File root;
     private File child;
     private File grandChild;
+    private CountDownLatch finishedGate;
 
     @Before
     public void setUp() throws Exception {
         createDirectoryStructure();
         executorService = Executors.newFixedThreadPool(1);
-        int port = someUnusedPort();
+        int port = 55001;
         telnetServer = new TelnetServer(port);
+        finishedGate = new CountDownLatch(1);
         executorService.submit(new Runnable() {
             @Override
             public void run() {
                 telnetServer.start();
+                finishedGate.countDown();
             }
         });
 
@@ -56,7 +60,8 @@ public class TelnetServerTest {
     public void tearDown() throws Exception {
         socket.close();
         telnetServer.close();
-        executorService.shutdownNow();
+        executorService.shutdown();
+        finishedGate.await(2, TimeUnit.SECONDS);
     }
 
     @Test
@@ -140,20 +145,4 @@ public class TelnetServerTest {
     private void whenTheClientSends(String command) throws IOException {
         new PrintWriter(socket.getOutputStream(), true).println(command);
     }
-
-    private int someRandomNotWellKnownPort() {
-        return new Random().nextInt(1000) + 5000;
-    }
-
-    private int someUnusedPort() {
-        int port = someRandomNotWellKnownPort();
-        while (true) {
-            try {
-                new Socket("localhost", port);
-            } catch (IOException e) {
-                return port;
-            }
-        }
-    }
-
 }
