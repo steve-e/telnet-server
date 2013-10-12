@@ -9,10 +9,6 @@ import org.junit.rules.TemporaryFolder;
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
@@ -24,27 +20,16 @@ public class TelnetServerTest {
 
     private TelnetServer telnetServer;
     private Socket socket;
-    private ExecutorService executorService;
     private File root;
     private File child;
     private File grandChild;
-    private CountDownLatch finishedGate;
 
     @Before
     public void setUp() throws Exception {
         createDirectoryStructure();
-        executorService = Executors.newFixedThreadPool(1);
         int port = 55001;
         telnetServer = new TelnetServer(port);
-        finishedGate = new CountDownLatch(1);
-        executorService.submit(new Runnable() {
-            @Override
-            public void run() {
-                telnetServer.start();
-                finishedGate.countDown();
-            }
-        });
-
+        telnetServer.start();
         socket = new Socket();
         socket.connect(new InetSocketAddress(port), 2000);
     }
@@ -60,8 +45,6 @@ public class TelnetServerTest {
     public void tearDown() throws Exception {
         socket.close();
         telnetServer.close();
-        executorService.shutdown();
-        finishedGate.await(2, TimeUnit.SECONDS);
     }
 
     @Test
