@@ -1,4 +1,4 @@
-package cisco.telnet;
+package telnet.server;
 
 public class TelnetRunner {
     public static void main(String[] args) {

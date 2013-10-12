@@ -1,4 +1,4 @@
-package cisco.telnet;
+package telnet.server;
 
 import java.io.File;
 

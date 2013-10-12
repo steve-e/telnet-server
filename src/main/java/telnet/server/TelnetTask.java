@@ -1,9 +1,9 @@
-package cisco.telnet;
+package telnet.server;
 
-import cisco.telnet.commands.ExitCommand;
-import cisco.telnet.commands.TelnetCommand;
-import cisco.telnet.commands.TelnetCommands;
 import org.apache.commons.lang.StringUtils;
+import telnet.server.commands.ExitCommand;
+import telnet.server.commands.TelnetCommand;
+import telnet.server.commands.TelnetCommands;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,7 +34,7 @@ public class TelnetTask implements Runnable {
                 respondTo(command());
             }
         } catch (IOException e) {
-            // Connection reset, exit
+            throw new IllegalStateException(e);
         }
     }
 

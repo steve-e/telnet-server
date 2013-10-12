@@ -1,4 +1,4 @@
-package cisco.telnet;
+package telnet.server;
 
 import org.junit.After;
 import org.junit.Before;

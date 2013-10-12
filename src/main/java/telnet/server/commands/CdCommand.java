@@ -1,6 +1,6 @@
-package cisco.telnet.commands;
+package telnet.server.commands;
 
-import cisco.telnet.CommandResult;
+import telnet.server.CommandResult;
 
 import java.io.File;
 
