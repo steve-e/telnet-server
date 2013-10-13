@@ -1,8 +1,10 @@
-package cisco.telnet.commands;
+package telnet.server.commands;
 
-import cisco.telnet.CommandResult;
 import org.apache.commons.lang.StringUtils;
+import telnet.server.CommandResult;
+
 import java.io.File;
+
 import static java.lang.System.lineSeparator;
 
 public class LsCommand implements TelnetCommand {
